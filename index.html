@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compudex: La Guía Modular de Arquitectura de Computadoras</title>
+    <!-- Font Awesome para íconos elegantes -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Tipografía orientada a informática -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Globales: Dark Mode y Tipografía */
+        :root {
+            --color-bg-main: #14141d; /* Oscuro profundo */
+            --color-bg-secondary: #212130; /* Oscuro medio */
+            --color-text-main: #f0f0f0;
+            --color-text-secondary: #aaaaaa;
+            --color-accent-blue: #00bcd4; /* Cian futurista (Primario) */
+            --color-accent-red: #ff6e40; /* Naranja/Rojo (Secundario) */
+            --font-main: 'Fira Code', monospace;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            margin: 0;
+            background-color: var(--color-bg-main);
+            color: var(--color-text-main);
+            line-height: 1.6;
+        }
+
+        /* Contenedor Principal */
+        #app-container {
+            display: flex;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: auto;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            background-color: var(--color-bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Navegación Lateral (Sidebar) */
+        #sidebar {
+            width: 280px;
+            background-color: #0d1217; 
+            color: var(--color-text-main);
+            padding: 20px 0;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 3px solid var(--color-accent-blue);
+        }
+        #sidebar h1 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            padding: 0 15px;
+            color: var(--color-accent-blue);
+            text-shadow: 0 0 8px rgba(0, 188, 212, 0.8);
+        }
+        .nav-link {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-left: 5px solid transparent;
+            transition: background-color 0.3s, border-left-color 0.3s;
+            display: block;
+        }
+        .nav-link:hover {
+            background-color: #1f314d;
+        }
+        .nav-link.active {
+            background-color: #00bcd433;
+            border-left-color: var(--color-accent-blue);
+            font-weight: bold;
+            color: white;
+        }
+        .author-info {
+            padding: 20px;
+            font-size: 0.8em;
+            opacity: 0.7;
+            border-top: 1px solid #333;
+            margin-top: 20px;
+        }
+        
+        /* Contenido Principal */
+        #content-area {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        h2 {
+            color: var(--color-accent-red);
+            border-bottom: 2px solid var(--color-accent-blue);
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+        h3 {
+            color: var(--color-accent-blue);
+            border-left: 4px solid var(--color-accent-red);
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+        
+        .tecnicismo {
+            color: #ffc107;
+            font-weight: 700;
+        }
+        .figure-box {
+            background-color: #3d3d3d;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 6px solid var(--color-accent-blue);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .figure-box strong {
+            color: var(--color-accent-red);
+        }
+
+        /* --- LÓGICA DE INTERACTIVIDAD --- */
+
+        /* 3. Diagrama de Ciclo de Instrucciones (Mejorado) */
+        .instruction-cycle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #2a2a40;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .cycle-box {
+            background-color: #33334d;
+            border: 2px solid var(--color-accent-blue);
+            padding: 15px 10px;
+            border-radius: 8px;
+            width: 18%;
+            text-align: center;
+            font-size: 0.9em;
+            transition: all 0.5s ease-in-out;
+            position: relative;
+        }
+        .cycle-box.active {
+            background-color: var(--color-accent-blue);
+            color: var(--color-bg-main);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--color-accent-blue);
+        }
+        .cycle-arrow {
+            color: #ff6e40;
+            font-size: 2em;
+            transition: color 0.5s;
+        }
+        .cycle-controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .cycle-controls button {
+            background-color: var(--color-accent-red);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            transition: background-color 0.3s;
+        }
+        .cycle-controls button:hover {
+            background-color: #e65100;
+        }
+
+        /* 5. Diagrama de Motherboard Realista (Hotspots y Tooltip Avanzado) */
+        .motherboard-diagram-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            height: 450px;
+            margin: 30px auto;
+            background: #111;
+            border: 5px solid #000;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.9);
+        }
+        
+        .motherboard-diagram-container::before {
+            content: 'Motherboard (Esquema Interactivo)';
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            font-size: 0.9em;
+            color: var(--color-accent-red);
+            padding: 5px 10px;
+            background: #111;
+            border-radius: 5px;
+            z-index: 10;
+        }
+
+        .mb-hotspot {
+            position: absolute;
+            border: 2px dashed rgba(0, 188, 212, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: var(--color-text-main);
+            text-shadow: 0 0 5px black;
+        }
+
+        .mb-hotspot:hover {
+            border: 2px solid var(--color-accent-red);
+            box-shadow: 0 0 15px var(--color-accent-red);
+            background-color: rgba(255, 110, 64, 0.1);
+        }
+        
+        /* Posiciones Realistas */
+        #mb-cpu { top: 50px; left: 200px; width: 120px; height: 120px; border-radius: 5px; }
+        #mb-ram1 { top: 80px; left: 350px; width: 15px; height: 160px; }
+        #mb-ram2 { top: 80px; left: 375px; width: 15px; height: 160px; }
+        #mb-pch { bottom: 50px; left: 180px; width: 60px; height: 60px; border-radius: 50%; }
+        #mb-pcie-x16 { bottom: 80px; right: 150px; width: 250px; height: 20px; background-color: rgba(0, 188, 212, 0.1); }
+        #mb-m2 { top: 250px; left: 300px; width: 80px; height: 15px; }
+        #mb-sata { bottom: 30px; left: 350px; width: 50px; height: 30px; }
+
+        /* Tooltip para el diagrama */
+        #mb-tooltip {
+            position: absolute;
+            background-color: var(--color-bg-secondary);
+            border: 3px solid var(--color-accent-blue);
+            padding: 10px;
+            border-radius: 8px;
+            width: 250px;
+            z-index: 100;
+            display: none;
+            pointer-events: none; /* Asegura que no interfiera con el mouse */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            transform: translate(15px, 15px);
+        }
+        #mb-tooltip h4 {
+            margin: 0 0 5px 0;
+            color: var(--color-accent-red);
+        }
+        #mb-tooltip p {
+            font-size: 0.9em;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* 6. Contenido Multimedia */
+        .media-container {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #2a2a40;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .media-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .media-item h4 {
+            color: var(--color-accent-blue);
+            margin-top: 0;
+        }
+        .media-item iframe, .media-item audio {
+            width: 100%;
+            max-width: 560px;
+            border-radius: 5px;
+            border: none;
+        }
+        .media-item audio {
+            height: 40px;
+            background-color: #3d3d3d;
+        }
+
+        /* Estilos del Juego "8 Escalones" */
+        #game-section {
+            background-color: #3d3d3d;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .question-box {
+            background-color: var(--color-bg-main);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        .options-container button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 12px;
+            border: 2px solid var(--color-accent-blue);
+            border-radius: 5px;
+            background-color: var(--color-bg-secondary);
+            color: var(--color-text-main);
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            font-family: var(--font-main);
+            font-size: 1em;
+        }
+        .options-container button:hover {
+            background-color: var(--color-accent-blue);
+            color: var(--color-bg-main);
+        }
+        .options-container button.correct {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+        .options-container button.incorrect {
+            background-color: #dc3545;
+            color: white;
+            font-weight: bold;
+        }
+        #score, #game-result {
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: bold;
+            color: var(--color-accent-blue);
+        }
+        #restart-button {
+            padding: 10px 20px;
+            background-color: var(--color-accent-red);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: opacity 0.3s;
+        }
+        #restart-button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Tooltip de Motherboard (Punto 5) -->
+<div id="mb-tooltip">
+    <h4 id="tooltip-title"></h4>
+    <p id="tooltip-body"></p>
+</div>
+
+<div id="app-container">
+    
+    <div id="sidebar">
+        <h1>Compudex</h1>
+        <!-- Íconos FontAwesome (Punto 2) -->
+        <a class="nav-link active" data-target="intro"><i class="fas fa-desktop"></i> Inicio y Fundamentos</a>
+        <a class="nav-link" data-target="unidad-cpu"><i class="fas fa-microchip"></i> Unidad 1: Microprocesador</a>
+        <a class="nav-link" data-target="unidad-memoria"><i class="fas fa-memory"></i> Unidad 2: Jerarquía de Memoria</a>
+        <a class="nav-link" data-target="unidad-motherboard"><i class="fas fa-cogs"></i> Unidad 3: Buses y Motherboard</a>
+        <a class="nav-link" data-target="unidad-arranque"><i class="fas fa-bolt"></i> Unidad 4: Arranque y Firmware</a>
+        <a class="nav-link" data-target="unidad-perifericos"><i class="fas fa-gamepad"></i> Unidad 5: Periféricos</a>
+        <a class="nav-link" data-target="juego-final"><i class="fas fa-trophy"></i> Juego Final: 8 Escalones</a>
+        
+        <div class="author-info">
+            <p>Por: Ángel Gómez</p>
+            <p>Materia: Arquitectura de Computadoras</p>
+        </div>
+    </div>
+
+    <div id="content-area">
+        
+        <div id="intro" class="content-section active">
+            <h2>Introducción: Arquitectura, Organización e Infraestructura</h2>
+            
+            <p>Cuando se estudian los sistemas computacionales, es crucial diferenciar tres conceptos fundamentales que definen el diseño del sistema y su posterior implementación.</p>
+
+            <h3>Arquitectura de la Computadora</h3>
+            <p>Define los atributos del sistema que son <span class="tecnicismo">visibles para el programador</span>. Esto incluye el Conjunto de Instrucciones (ISA, <span class="tecnicismo">Instruction Set Architecture</span>), las técnicas de direccionamiento de memoria, y el número de bits utilizados para representar datos (ej. 32 bits, 64 bits). La arquitectura responde a la pregunta de <span class="tecnicismo">qué hace</span> el sistema y establece los contratos de software.</p>
+
+            <h3>Organización de la Computadora</h3>
+            <p>Se refiere a las unidades funcionales del hardware y sus interconexiones, es decir, cómo se <span class="tecnicismo">implementan</span> las especificaciones arquitectónicas. Esto incluye el diseño de la Ruta de Datos (<span class="tecnicismo">Data Path</span>), las señales de control, la tecnología de memoria (DRAM o SRAM), y los tipos de buses internos. La organización responde a <span class="tecnicismo">cómo se implementa</span> el sistema para lograr las funcionalidades definidas por la arquitectura.</p>
+
+            <h3>Infraestructura Informática</h3>
+            <p>Es el nivel más amplio que engloba todos los componentes necesarios para el funcionamiento de una organización o servicio, incluyendo el hardware, el software base (Sistemas Operativos, Hipervisores), los sistemas de redes y servicios asociados (servidores, <span class="tecnicismo">data centers</span>).</p>
+            
+            <hr>
+            
+            <h2>Modelos Arquitectónicos: Von Neumann vs. Harvard</h2>
+            
+            <div class="figure-box">
+                <p>El <span class="tecnicismo">Core</span> de la Computadora se define principalmente por el tipo de arquitectura que utiliza para el flujo de instrucciones y datos. Comprender estos modelos es fundamental para el diseño de cualquier sistema.</p>
+            </div>
+            
+            <p>Estos son los dos modelos fundacionales para el diseño de computadoras. Sus diferencias radican en el manejo de la memoria y los buses, impactando directamente en el rendimiento:</p>
+
+            <table border="1" style="width: 100%; border-collapse: collapse; text-align: left; background-color: #3d3d3d; border: 1px solid #555;">
+                <thead>
+                    <tr style="background-color: var(--color-accent-blue); color: var(--color-bg-main);">
+                        <th>Característica</th>
+                        <th>Arquitectura Von Neumann</th>
+                        <th>Arquitectura Harvard</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-top: 1px solid #555;">
+                        <td><strong>Memoria</strong></td>
+                        <td>Memoria única para datos e instrucciones.</td>
+                        <td>Memorias separadas para datos y para instrucciones.</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #555;">
+                        <td><strong>Bus</strong></td>
+                        <td>Bus único para datos y para instrucciones (Bus de Von Neumann).</td>
+                        <td>Buses de datos y de instrucciones <span class="tecnicismo">separados</span>.</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #555;">
+                        <td><strong>Ventaja principal</strong></td>
+                        <td>Diseño más simple y más flexible para programación.</td>
+                        <td><span class="tecnicismo">Mayor velocidad</span> de procesamiento: se pueden captar instrucciones y datos simultáneamente.</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #555;">
+                        <td><strong>Inconveniente</strong></td>
+                        <td>Presenta el <span class="tecnicismo">Cuello de botella de Von Neumann</span> (el bus único limita la tasa de transferencia de datos).</td>
+                        <td>Menos flexible para el intercambio de información entre código y datos.</td>
+                    </tr>
+                    <tr style="border-top: 1px solid #555;">
+                        <td><strong>Uso Típico</strong></td>
+                        <td>Computadoras de uso general (PC, Laptops).</td>
+                        <td>Sistemas embebidos, procesadores de señales digitales (DSP) y microcontroladores de alto rendimiento, donde la velocidad es crítica.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>📌 <span class="tecnicismo">Modelo Híbrido:</span> Las computadoras modernas emplean una arquitectura <span class="tecnicismo">híbrida</span>: utilizan la estructura Von Neumann en la memoria principal (RAM) y la estructura Harvard en los niveles de caché más cercanos al procesador (L1 y L2) para aprovechar la velocidad de procesamiento paralelo de los buses separados.</p>
+
+        </div>
+        
+        <div id="unidad-cpu" class="content-section">
+            <h2>Unidad 1: Microprocesador</h2>
+            <p>El microprocesador es la Unidad Central de Procesamiento (CPU) y es el <span class="tecnicismo">cerebro de la computadora</span>. Es un circuito integrado que ejecuta instrucciones y controla el flujo de información a través del sistema.</p>
+
+            <h3>Componentes Internos del Microprocesador</h3>
+            <p>La <span class="tecnicismo">CPU</span> (núcleo) contiene tres elementos esenciales para la ejecución de tareas. Sus <span class="tecnicismo">componentes fundamentales</span> son:</p>
+            <ul>
+                <li>La <span class="tecnicismo">Unidad de Control (UC)</span> o <span class="tecnicismo">Control Unit</span>: Dirige y coordina el funcionamiento de la CPU. Su rol es interpretar las instrucciones y generar las <span class="tecnicismo">señales de control</span> necesarias para que la ALU, los registros y las unidades de E/S realicen sus tareas.</li>
+                <li>La <span class="tecnicismo">Unidad Aritmético-Lógica (ALU)</span> o <span class="tecnicismo">Arithmetic Logic Unit</span>: Realiza las operaciones matemáticas (suma, resta, multiplicación, división) y las operaciones lógicas (AND, OR, NOT, comparación). Es el punto de ejecución de los cálculos.</li>
+                <li>Los <span class="tecnicismo">Registros</span>:  Son <span class="tecnicismo">unidades de memoria extremadamente rápidas</span> dentro de la CPU que almacenan temporalmente datos, direcciones o estados. El <span class="tecnicismo">Contador de Programa (PC)</span> almacena la dirección de la próxima instrucción a ejecutar, y el <span class="tecnicismo">Registro de Instrucción (IR)</span> contiene la instrucción que se está ejecutando actualmente.</li>
+            </ul>
+            
+            <h3>Ciclo de Instrucción (Diagrama de flujo)</h3>
+            <!-- Punto 3: Implementación interactiva mejorada con SVG/CSS -->
+            <p>El funcionamiento del microprocesador se basa en el **Ciclo de Instrucción**, conocido como ciclo <span class="tecnicismo">Fetch-Decode-Execute-WriteBack</span>. A continuación, se ilustra el <span class="tecnicismo">Diagrama de flujo</span> interactivo que simula el <span class="tecnicismo">pipeline</span> (tubería) del CPU. Haz clic para simular el avance de la instrucción.</p>
+
+            <div class="cycle-controls">
+                <button id="next-cycle-step"><i class="fas fa-play"></i> Siguiente Etapa</button>
+            </div>
+            <div class="instruction-cycle">
+                <div class="cycle-box" id="cpu-step-1">
+                    <i class="fas fa-download"></i><br>
+                    <strong>1. Captación (FETCH)</strong><br>
+                    Busca la instrucción en la memoria.
+                </div>
+                <div class="cycle-arrow">➔</div>
+                <div class="cycle-box" id="cpu-step-2">
+                    <i class="fas fa-code-branch"></i><br>
+                    <strong>2. Decodificación (DECODE)</strong><br>
+                    La UC interpreta el <span class="tecnicismo">OpCode</span>.
+                </div>
+                <div class="cycle-arrow">➔</div>
+                <div class="cycle-box" id="cpu-step-3">
+                    <i class="fas fa-calculator"></i><br>
+                    <strong>3. Ejecución (EXECUTE)</strong><br>
+                    La ALU o registros realizan la operación.
+                </div>
+                <div class="cycle-arrow">➔</div>
+                <div class="cycle-box" id="cpu-step-4">
+                    <i class="fas fa-upload"></i><br>
+                    <strong>4. Escritura (WRITE-BACK)</strong><br>
+                    Guarda el resultado en registro o caché.
+                </div>
+            </div>
+            
+            <h3>Arquitecturas de Conjunto de Instrucciones</h3>
+            <p>La complejidad de la ejecución de instrucciones determina el tipo de arquitectura:</p>
+            <ul>
+                <li>**CISC** (<span class="tecnicismo">Complex Instruction Set Computing</span>): Posee un gran número de instrucciones complejas que pueden tardar varios ciclos de reloj en completarse. <span class="tecnicismo">Ej: Arquitectura x86/x86-64</span>.</li>
+                <li>**RISC** (<span class="tecnicismo">Reduced Instruction Set Computing</span>): Utiliza un conjunto reducido de instrucciones muy simples y estandarizadas, que buscan ejecutarse en <span class="tecnicismo">un solo ciclo de reloj</span>. Esto permite un <span class="tecnicismo">pipeline</span> más profundo y menor consumo de energía. <span class="tecnicismo">Ej: Arquitectura ARM</span>.</li>
+            </ul>
+        </div>
+
+        <div id="unidad-memoria" class="content-section">
+            <h2>Unidad 2: Jerarquía de Memoria</h2>
+            <p>La **Jerarquía de Memoria** es un diseño arquitectónico piramidal. En la cima está la memoria más rápida (Registros/Caché L1), que es pequeña y costosa. En la base está la más lenta (Almacenamiento Secundario), que es grande y económica. Este equilibrio es vital para el rendimiento.</p>
+
+            <h3>Memoria Caché y Políticas de Reemplazo</h3>
+            <p>La **Memoria Caché** (<span class="tecnicismo">Cache Memory</span>) es memoria SRAM muy rápida que minimiza la latencia de acceso a la RAM. La eficiencia de la caché se mide por la tasa de aciertos (<span class="tecnicismo">Hit Rate</span>).</p>
+            <ul>
+                <li>**Niveles:** **L1** (en el núcleo, para instrucciones y datos por separado), **L2** (intermedia), **L3** (compartida entre todos los núcleos).</li>
+                <li>**Política LRU (Least Recently Used):** Es una de las políticas de reemplazo de caché más comunes. Cuando la caché está llena y se necesita cargar un nuevo bloque de datos, la política LRU descarta el bloque que ha permanecido <span class="tecnicismo">sin usarse por más tiempo</span>.</li>
+                <li>**Políticas de Escritura:** <span class="tecnicismo">Write-Through</span> (escribe a la caché y a la RAM simultáneamente) y <span class="tecnicismo">Write-Back</span> (solo escribe a la caché y pospone la escritura a la RAM hasta que el bloque sea reemplazado).</li>
+            </ul>
+
+            <h3>Memoria Virtual y Paginación</h3>
+            <p>La **Memoria Virtual** es un concepto abstracto gestionado por el Sistema Operativo que permite a los programas creer que tienen un espacio de memoria contiguo y mucho más grande que la RAM física disponible.</p>
+            <ul>
+                <li>**Paginación:** Es el mecanismo central. Divide la memoria en bloques fijos de pequeño tamaño (Páginas, en la virtual; Marcos de Página o <span class="tecnicismo">Page Frames</span>, en la física). La Unidad de Gestión de Memoria (MMU) se encarga de traducir las direcciones virtuales a direcciones físicas.</li>
+            </ul>
+        </div>
+
+        <div id="unidad-motherboard" class="content-section">
+            <h2>Unidad 3: Buses y Motherboard</h2>
+            <!-- Punto 4: Teoría de Motherboard -->
+            <p>La **Motherboard** (placa base) es la plataforma de interconexión. Su principal función es proporcionar el medio físico y lógico para que la CPU interactúe con el resto del hardware, garantizando el suministro de energía y la sincronización de las comunicaciones a través de sus **Buses** y el **Chipset**.</p>
+            
+            <h3>El Chipset y la Interconectividad (Punto 4: Profundización)</h3>
+            <p>El <span class="tecnicismo">Chipset</span> es el conjunto de circuitos integrados que actúa como intermediario entre el microprocesador y el resto de los componentes. En arquitecturas modernas, se ha reducido a un único chip principal:</p>
+            <ul>
+                <li>**PCH** (<span class="tecnicismo">Platform Controller Hub</span>): Este chip asume las funciones del antiguo **Puente Sur** y gestiona las comunicaciones de baja a media velocidad (USB, SATA, LAN, Audio, ranuras PCI-e x1). El PCH se comunica con el CPU a través de un bus de alta velocidad exclusivo (como <span class="tecnicismo">DMI</span> o <span class="tecnicismo">FDI</span> en Intel).</li>
+                <li>**CPU como Puente Norte:** En las arquitecturas modernas (desde Intel Core i en adelante), el CPU ha absorbido el **Controlador de Memoria** y el **Controlador PCI Express de alta velocidad (x16)**, eliminando la necesidad del antiguo Puente Norte.</li>
+            </ul>
+            
+            <h3>Esquema Interactivo de la Motherboard (Moderno)</h3>
+            <!-- Punto 5: Diagrama Motherboard Realista y Completo -->
+            <p>A continuación, explora los principales componentes de la Motherboard moderna y cómo se interconectan. Mueve el ratón sobre los elementos para ver su función.</p>
+            
+            <div class="motherboard-diagram-container">
+                <!-- El tooltip se moverá con el ratón -->
+                
+                <div class="mb-hotspot" id="mb-cpu" data-label="Zócalo CPU" 
+                    data-info="Aquí reside el Microprocesador. Contiene el Controlador de Memoria y el Controlador Gráfico primario (PCIe x16). Es el centro de toda la comunicación de alta velocidad.">
+                    CPU
+                </div>
+                
+                <div class="mb-hotspot" id="mb-ram1" data-label="Slots RAM (DDR)"
+                    data-info="Ranuras para la memoria principal. Se conectan directamente al Controlador de Memoria integrado en el CPU, a través del Bus de Memoria, para la máxima velocidad de transferencia.">
+                    RAM 1
+                </div>
+                
+                <div class="mb-hotspot" id="mb-ram2" data-label="Slots RAM (DDR)"
+                    data-info="Ranuras para la memoria principal. Se conectan directamente al Controlador de Memoria integrado en el CPU, a través del Bus de Memoria, para la máxima velocidad de transferencia.">
+                    RAM 2
+                </div>
+                
+                <div class="mb-hotspot" id="mb-pch" data-label="PCH / Chipset"
+                    data-info="Platform Controller Hub. Gestiona todos los puertos de E/S de baja velocidad y el almacenamiento SATA. Se comunica con el CPU mediante el bus DMI.">
+                    PCH
+                </div>
+                
+                <div class="mb-hotspot" id="mb-pcie-x16" data-label="Slot PCIe x16"
+                    data-info="Ranura de mayor ancho de banda (x16) para Tarjetas Gráficas. Conectada directamente al CPU para latencia mínima y máxima velocidad (Bus PCIe Serial).">
+                    PCIe x16
+                </div>
+
+                <div class="mb-hotspot" id="mb-m2" data-label="Slot M.2 (NVMe)"
+                    data-info="Conexión de SSD ultra-rápida. Puede estar conectada al CPU (para NVMe de alta velocidad) o al PCH. Utiliza el protocolo PCIe o SATA.">
+                    M.2
+                </div>
+
+                <div class="mb-hotspot" id="mb-sata" data-label="Puertos SATA"
+                    data-info="Puertos para discos duros y SSD tradicionales (SATA 3.0). Gestionados enteramente por el PCH. Protocolo AHCI o NVMe (en caso de M.2).">
+                    SATA
+                </div>
+                
+                <!-- Se podría añadir un indicador de bus DMI/FDI entre CPU y PCH para más detalle -->
+            </div>
+            
+            <h3>Buses Seriales vs. Paralelos</h3>
+            <p>Los <span class="tecnicismo">Buses</span> se dividen en Bus de Datos, Bus de Direcciones y Bus de Control. Actualmente, los buses seriales dominan por su superioridad en altas frecuencias:</p>
+            <ul>
+                <li>**Bus Paralelo:** Transfiere varios bits a la vez. <span class="tecnicismo">Desventaja</span>: El problema de la inclinación de las señales (<span class="tecnicismo">skew</span>) dificulta la sincronización a alta velocidad.</li>
+                <li>**Bus Serial (PCIe, USB, SATA):** Transfiere los bits uno a uno. <span class="tecnicismo">Ventaja</span>: Requiere menos líneas físicas, es mucho más fácil de sincronizar y logra <span class="tecnicismo">velocidades de transferencia más altas</span> en las tecnologías modernas.</li>
+            </ul>
+        </div>
+
+        <div id="unidad-arranque" class="content-section">
+            <h2>Unidad 4: Sistema de Arranque y Firmware</h2>
+            <p>El **proceso de arranque** (<span class="tecnicismo">boot-up</span>) es la secuencia que transforma un sistema inactivo en una plataforma operativa. Todo inicia con la CPU accediendo al <span class="tecnicismo">firmware</span> de arranque.</p>
+            
+            <h3>POST y UEFI/BIOS</h3>
+            <ul>
+                <li>**POST** (<span class="tecnicismo">Power-On Self Test</span>): Es la fase inicial. El firmware realiza pruebas de hardware para verificar el correcto funcionamiento de la CPU, la memoria RAM, los controladores de video y otros dispositivos críticos. Si hay fallos, emite códigos de error o pitidos.</li>
+                <li>**UEFI** (<span class="tecnicismo">Unified Extensible Firmware Interface</span>): El estándar moderno que reemplaza a la BIOS. Ofrece capacidades de 64 bits, arranque seguro (<span class="tecnicismo">Secure Boot</span>) y soporte para el esquema de partición GPT, crucial para manejar discos duros de gran capacidad (>2TB).</li>
+            </ul>
+            
+            <!-- Punto 6: Contenido Multimedia REAL -->
+            <div class="figure-box media-container">
+                <h3><i class="fas fa-video"></i> Video Educativo: El Arranque de la PC</h3>
+                <p>Este video explica la secuencia completa del proceso de arranque: desde el POST hasta la carga del Sistema Operativo.</p>
+                <div class="media-item">
+                    <!-- URL de video de YouTube simulada para fines de visualización -->
+                    <iframe controls width="560" height="315" src="https://www.youtube.com/embed/xy5oq-r-V1s?si=22X7JFrP7422cR6O" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+            
+            <h3>Secuencia de Carga y Gestor de Arranque</h3>
+            <p>Una vez que el POST finaliza, el firmware carga el **Gestor de Arranque** (<span class="tecnicismo">Boot Loader</span>) en la memoria. Este programa es el encargado de localizar el núcleo (*kernel*) del Sistema Operativo y transferirle el control para que pueda inicializar los <span class="tecnicismo">drivers</span> y el resto del sistema.</p>
+        </div>
+        
+        <div id="unidad-perifericos" class="content-section">
+            <h2>Unidad 5: Periféricos y Controladores</h2>
+            <p>Los **Periféricos** son los dispositivos que actúan como interfaz entre la computadora y el mundo exterior, ya sea para entrada, salida o almacenamiento.</p>
+            
+            <h3>Controladores y Acceso Directo a Memoria (DMA)</h3>
+            <p>Cada periférico necesita un **Controlador** (compuesto por hardware y software, el <span class="tecnicismo">driver</span>) para gestionar la comunicación con la CPU. Para mejorar la eficiencia en dispositivos de alta velocidad, se utiliza el **DMA**.</p>
+            <ul>
+                <li>**Interrupción:** Mecanismo de control donde un periférico genera una señal (interrupción) para notificar a la CPU que requiere servicio, deteniendo temporalmente su tarea actual. Las interrupciones son gestionadas por un Controlador de Interrupciones Programable (<span class="tecnicismo">PIC</span>) o su equivalente moderno.</li>
+                <li>**DMA** (<span class="tecnicismo">Direct Memory Access</span>): Es un método de transferencia de datos donde el controlador del periférico (con la ayuda de un controlador DMA) mueve grandes bloques de datos <span class="tecnicismo">directamente entre el periférico y la RAM</span> sin la intervención continua de la CPU. Esto libera al CPU para que pueda dedicarse a tareas de procesamiento, siendo fundamental para discos duros (SSD/HDD) y tarjetas gráficas.</li>
+            </ul>
+            
+            <h3>Tipos de Interfaz de Usuario</h3>
+            <p>La **Interfaz de Usuario** es el medio por el cual las personas interactúan con el software:</p>
+            <ul>
+                <li>**CLI** (<span class="tecnicismo">Command Line Interface</span>): Basada en texto, requiere comandos escritos. Ofrece control granular.</li>
+                <li>**GUI** (<span class="tecnicismo">Graphical User Interface</span>): Basada en ventanas, iconos, menús y punteros (modelo WIMP). Es la más común.</li>
+                <li>**NUI** (<span class="tecnicismo">Natural User Interface</span>): Interacción mediante gestos, voz o tacto.</li>
+            </ul>
+
+            <div class="figure-box media-container">
+                <h3><i class="fas fa-podcast"></i> Podcast: Periféricos inteligentes de Entrada/Salida.</h3>
+                <p>Este podcast analiza el rol de los periféricos. su funcionamiento y composición, y la importancia dentro de una computadora.</p>
+                <div class="media-item">
+                    <!-- URL de audio simulada (archivo de muestra) -->
+                    <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" controls src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2197608003&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"
+                    ></iframe>
+                    <div style="font-size: 10px; color: #cccccc;line-break: anywhere;word-break: normal;overflow: hidden;white-space: nowrap;text-overflow: ellipsis; font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;font-weight: 100;"><a href="https://soundcloud.com/angel-794503420" title="Ángel" target="_blank" style="color: #cccccc; text-decoration: none;">Ángel</a> · <a href="https://soundcloud.com/angel-794503420/perifericos-inteligentes-de-es" title="Periféricos Inteligentes de E/S" target="_blank" style="color: #cccccc; text-decoration: none;">Periféricos Inteligentes de E/S</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="juego-final" class="content-section">
+            <h2>🏆 Juego Final: 8 Escalones de la Arquitectura</h2>
+            <p>¡Demuestra tu dominio conceptual! Responde correctamente las 8 preguntas seleccionadas aleatoriamente de un banco de 45. Cada pregunta errónea termina el juego.</p>
+            
+            <div id="game-section">
+                <div id="quiz-container">
+                    <p>Cargando el desafío...</p>
+                </div>
+                <div id="score">Escalón: 1 de 8</div>
+                <div id="game-result"></div>
+                <button id="restart-button" style="display: none;"><i class="fas fa-redo"></i> Reiniciar Desafío</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA DE NAVEGACIÓN Y CARGA DE CONTENIDO ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(l => l.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+
+                this.classList.add('active');
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+
+                if (targetId === 'juego-final') {
+                    resetGame();
+                }
+            });
+        });
+
+        // --- 3. Diagrama de Ciclo de Instrucciones (Mejorado) ---
+        const cycleSteps = document.querySelectorAll('.instruction-cycle .cycle-box');
+        let currentCycleStep = 0;
+        document.getElementById('next-cycle-step').addEventListener('click', () => {
+            cycleSteps.forEach(step => step.classList.remove('active'));
+            
+            // Avanza de 1 a 4, luego vuelve a 1.
+            currentCycleStep = (currentCycleStep % 4) + 1;
+            
+            document.getElementById(`cpu-step-${currentCycleStep}`).classList.add('active');
+        });
+
+        // Inicializa el diagrama
+        document.getElementById('cpu-step-1').classList.add('active');
+
+        // --- 5. Diagrama de Motherboard Realista (Hotspots y Tooltip Avanzado) ---
+        const mbHotspots = document.querySelectorAll('.mb-hotspot');
+        const mbTooltip = document.getElementById('mb-tooltip');
+        const tooltipTitle = document.getElementById('tooltip-title');
+        const tooltipBody = document.getElementById('tooltip-body');
+        const motherboardContainer = document.querySelector('.motherboard-diagram-container');
+
+        mbHotspots.forEach(hotspot => {
+            hotspot.addEventListener('mousemove', (e) => {
+                const label = hotspot.getAttribute('data-label');
+                const info = hotspot.getAttribute('data-info');
+                
+                tooltipTitle.textContent = label;
+                tooltipBody.innerHTML = info;
+                
+                // Posicionar el tooltip cerca del cursor
+                mbTooltip.style.left = `${e.clientX - motherboardContainer.getBoundingClientRect().left + 15}px`;
+                mbTooltip.style.top = `${e.clientY - motherboardContainer.getBoundingClientRect().top + 15}px`;
+                mbTooltip.style.display = 'block';
+            });
+
+            hotspot.addEventListener('mouseleave', () => {
+                mbTooltip.style.display = 'none';
+            });
+        });
+
+        // --- 7. LÓGICA DEL JUEGO "8 ESCALONES" AVANZADO (45 Preguntas Únicas) ---
+
+        const fullQuizData = [
+            // UNIDAD 1: Microprocesador
+            { q: "¿Qué unidad de la CPU es responsable de interpretar las instrucciones y generar las señales de control?", o: ["ALU", "Registro PC", "Unidad de Control (UC)", "Bus de Datos"], a: "Unidad de Control (UC)", j: "La Unidad de Control (UC) es el director de la CPU, encargada de decodificar la instrucción y generar las microoperaciones necesarias en el tiempo adecuado." },
+            { q: "El ciclo de instrucción se compone de las etapas Fetch, Decode, Execute y...", o: ["Interrupt", "Write-Back", "Load", "Arithmetic"], a: "Write-Back", j: "El ciclo completo es Captación (Fetch), Decodificación (Decode), Ejecución (Execute) y Escritura (Write-Back), donde se guarda el resultado." },
+            { q: "¿Cuál es el principal inconveniente de la arquitectura Von Neumann?", o: ["Alto consumo energético", "Cuello de botella del bus único", "Falta de soporte para 64 bits", "Memoria separada para datos"], a: "Cuello de botella del bus único", j: "El 'cuello de botella de Von Neumann' surge porque el único bus debe manejar tanto datos como instrucciones, limitando la velocidad de transferencia." },
+            { q: "Una arquitectura RISC (como ARM) se caracteriza por usar:", o: ["Instrucciones muy complejas", "Pocas instrucciones que tardan varios ciclos", "Instrucciones simples que se ejecutan en un ciclo", "Un único bus para datos y código"], a: "Instrucciones simples que se ejecutan en un ciclo", j: "RISC (Reduced Instruction Set Computing) prioriza la sencillez y la ejecución rápida (un ciclo) para optimizar el *pipeline* y la eficiencia energética." },
+            { q: "¿Qué componente de la CPU realiza las operaciones lógicas (AND, OR, NOT) y aritméticas?", o: ["Memoria Caché L1", "Registro IR", "Unidad de Control", "Unidad Aritmético-Lógica (ALU)"], a: "Unidad Aritmético-Lógica (ALU)", j: "La ALU es la parte de la CPU dedicada exclusivamente a realizar los cálculos y las decisiones lógicas." },
+            { q: "El **Contador de Programa (PC)** tiene la función de:", o: ["Almacenar el resultado de la ALU", "Contener la dirección de la siguiente instrucción a ejecutar", "Guardar la instrucción actual", "Controlar la velocidad del reloj"], a: "Contener la dirección de la siguiente instrucción a ejecutar", j: "El PC es un registro crucial que siempre apunta a la dirección de memoria de la instrucción que debe ser captada en el siguiente ciclo." },
+            { q: "¿Qué tecnología permite que múltiples instrucciones se superpongan en ejecución dentro del CPU, como en una línea de ensamblaje?", o: ["Overclocking", "Virtualización", "Pipeline", "Multithreading"], a: "Pipeline", j: "El *Pipeline* es una técnica que divide el ciclo de instrucción en etapas (Fetch, Decode, Execute) para trabajar en varias instrucciones simultáneamente, mejorando el rendimiento." },
+            { q: "La arquitectura que utiliza memorias separadas para datos y para instrucciones se conoce como:", o: ["Von Neumann", "RISC", "CISC", "Harvard"], a: "Harvard", j: "La arquitectura Harvard usa buses y memorias separadas, lo que le permite acceder a la instrucción y al dato al mismo tiempo, evitando el cuello de botella." },
+            { q: "¿Qué es un 'registro' dentro de la CPU?", o: ["Un tipo de memoria lenta", "Un área de almacenamiento de alta velocidad", "Un bus de comunicación", "Un puerto de E/S"], a: "Un área de almacenamiento de alta velocidad", j: "Los registros son la memoria más rápida de la computadora, ubicados dentro del core de la CPU para acceso inmediato a datos y direcciones cruciales." },
+            { q: "¿Cuál es una ventaja principal del diseño CISC (ej. x86) sobre RISC?", o: ["Menor consumo energético", "Diseño de CPU más simple", "Instrucciones que pueden realizar tareas complejas en un solo código", "Mejor rendimiento en dispositivos móviles"], a: "Instrucciones que pueden realizar tareas complejas en un solo código", j: "CISC tiene instrucciones complejas que reducen el tamaño del programa, ya que una sola instrucción puede hacer el trabajo de varias instrucciones RISC." },
+            
+            // UNIDAD 2: Jerarquía de Memoria
+            { q: "La memoria caché de nivel 1 (L1) se caracteriza por ser:", o: ["Lenta y grande", "SRAM, pequeña y la más rápida de la jerarquía", "DRAM, grande y económica", "Externa al encapsulado del CPU"], a: "SRAM, pequeña y la más rápida de la jerarquía", j: "La caché L1 es la más pequeña y rápida, construida con tecnología SRAM y generalmente dividida para datos e instrucciones, residiendo en el núcleo del CPU." },
+            { q: "El propósito principal de la Jerarquía de Memoria es:", o: ["Eliminar la necesidad de discos duros", "Equilibrar velocidad, tamaño y coste de la memoria", "Aumentar la velocidad del bus de direcciones", "Reemplazar completamente a la RAM"], a: "Equilibrar velocidad, tamaño y coste de la memoria", j: "La jerarquía busca ofrecer una gran cantidad de memoria (lenta y barata) junto con una pequeña cantidad de memoria ultra-rápida (costosa) para optimizar el rendimiento general del sistema." },
+            { q: "¿Qué política de reemplazo de caché elimina el bloque que lleva más tiempo sin ser consultado?", o: ["FIFO", "LIFO", "LRU (Least Recently Used)", "MRU (Most Recently Used)"], a: "LRU (Least Recently Used)", j: "La política LRU se basa en la localidad temporal, asumiendo que el bloque que no se ha usado en más tiempo es el menos probable de ser usado en el futuro." },
+            { q: "El mecanismo de **Paginación** se relaciona directamente con:", o: ["La velocidad del disco duro", "La Memoria Virtual", "El POST", "El Bus de Control"], a: "La Memoria Virtual", j: "La paginación divide la memoria virtual en bloques fijos (páginas) y la memoria física en marcos de página (<span class='tecnicismo'>page frames</span>), permitiendo al sistema operativo gestionar el espacio de direcciones." },
+            { q: "¿Qué componente del hardware es responsable de la traducción de direcciones virtuales a direcciones físicas?", o: ["El Gestor de Arranque", "El PCH", "La Unidad de Gestión de Memoria (MMU)", "El Controlador de DMA"], a: "La Unidad de Gestión de Memoria (MMU)", j: "La MMU (Memory Management Unit) es un circuito integrado que reside generalmente en el CPU y es esencial para el manejo de la memoria virtual." },
+            { q: "¿Qué se considera un 'fallo de caché' (<span class='tecnicismo'>Cache Miss</span>)?", o: ["Cuando el CPU encuentra el dato", "Cuando el CPU no encuentra el dato en la caché y debe ir a la RAM", "Cuando el CPU accede a la RAM", "Cuando la RAM está llena"], a: "Cuando el CPU no encuentra el dato en la caché y debe ir a la RAM", j: "Un <span class='tecnicismo'>Cache Miss</span> es un evento costoso en tiempo, ya que obliga al CPU a buscar el dato en un nivel inferior de la jerarquía (más lento)." },
+            { q: "El nivel de caché L3 suele ser:", o: ["Exclusivo de cada Core", "Compartido por todos los Cores del CPU", "Más rápido que el L1", "Implementado con tecnología DRAM"], a: "Compartido por todos los Cores del CPU", j: "La caché L3 actúa como una caché de respaldo grande, compartida entre todos los núcleos del microprocesador antes de acceder a la memoria principal (RAM)." },
+            { q: "Una ventaja de la política de escritura **Write-Back** es:", o: ["Mayor consistencia con la RAM", "Menor latencia de escritura en la caché", "Requiere menos hardware", "Asegura que la RAM siempre esté actualizada"], a: "Menor latencia de escritura en la caché", j: "Write-Back es más rápido porque solo escribe en la caché y pospone la actualización a la RAM hasta que el bloque sea expulsado (reemplazado), reduciendo el tráfico al bus de memoria." },
+            { q: "La RAM principal utiliza tecnología:", o: ["SRAM", "Flash", "DRAM (Dynamic RAM)", "NVRAM"], a: "DRAM (Dynamic RAM)", j: "La Memoria de Acceso Aleatorio Dinámica (DRAM) es la más utilizada para la memoria principal debido a su alta densidad y costo inferior al de la SRAM, aunque requiere refresco periódico." },
+            { q: "¿Qué es el 'Espacio de Direcciones Virtuales'?", o: ["La dirección física real en la RAM", "El espacio de direcciones que un programa 'cree' tener", "La dirección del disco duro", "El tamaño de la caché L1"], a: "El espacio de direcciones que un programa 'cree' tener", j: "El espacio virtual es una abstracción que permite que cada programa opere como si fuera el único en el sistema, con un gran espacio de memoria contiguo." },
+
+            // UNIDAD 3: Buses y Motherboard
+            { q: "¿Qué componente de la Motherboard moderna ha absorbido las funciones del antiguo Puente Norte (Northbridge)?", o: ["El PCH", "El BIOS", "El Microprocesador (CPU)", "Los Slots PCIe x1"], a: "El Microprocesador (CPU)", j: "En las arquitecturas actuales, el Controlador de Memoria y el Controlador PCIe de la GPU están integrados en el CPU, asumiendo el rol del Puente Norte." },
+            { q: "El **PCH** (<span class='tecnicismo'>Platform Controller Hub</span>) es el equivalente moderno de:", o: ["El Puente Norte", "El Chip Gráfico", "El Puente Sur", "La ALU"], a: "El Puente Sur", j: "El PCH maneja las comunicaciones de baja velocidad y la E/S de la placa, tal como lo hacía el antiguo Puente Sur." },
+            { q: "¿Cuál de los siguientes buses es de naturaleza serial y de alta velocidad, utilizado principalmente para tarjetas gráficas y SSDs NVMe?", o: ["Bus ISA", "Bus AGP", "PCI Express (PCIe)", "Bus de Memoria"], a: "PCI Express (PCIe)", j: "PCIe es el bus serial dominante que ofrece el mayor ancho de banda y la menor latencia para dispositivos de expansión modernos." },
+            { q: "¿Qué determina la cantidad MÁXIMA de memoria RAM que una CPU puede direccionar?", o: ["El ancho del Bus de Datos", "La velocidad del reloj del CPU", "El ancho del Bus de Direcciones", "El tamaño de la caché L3"], a: "El ancho del Bus de Direcciones", j: "El número de líneas del Bus de Direcciones (ej. 32 o 64 bits) establece directamente el espacio de direcciones físicas posible (2^N)." },
+            { q: "El principal problema que llevó al reemplazo de los buses paralelos por seriales a altas frecuencias es:", o: ["El costo de los cables", "El problema del 'skew' (inclinación/desalineación de las señales)", "La falta de energía", "La incompatibilidad con la RAM"], a: "El problema del 'skew' (inclinación/desalineación de las señales)", j: "A frecuencias muy altas, las señales paralelas llegan al destino en momentos ligeramente diferentes (skew), dificultando la sincronización, un problema que los buses seriales resuelven." },
+            { q: "¿Qué bus conecta directamente el PCH con el CPU en la mayoría de las arquitecturas Intel modernas?", o: ["FSB (Front Side Bus)", "Bus de Memoria", "DMI (Direct Media Interface)", "Bus PCI"], a: "DMI (Direct Media Interface)", j: "El DMI es el enlace de alta velocidad que sirve como canal de comunicación dedicado entre el PCH (E/S de baja velocidad) y el CPU (Controlador de Memoria/PCIe de alta velocidad)." },
+            { q: "Los puertos SATA y USB son típicamente gestionados por:", o: ["El Controlador de Memoria del CPU", "El Slot PCIe x16", "El PCH", "La ALU"], a: "El PCH", j: "El PCH (Puente Sur) es responsable de las interfaces de E/S de media y baja velocidad, incluyendo SATA, USB y Audio." },
+            { q: "¿Qué tipo de ranura de expansión está conectada a un bus serial de alta velocidad?", o: ["PCI", "ISA", "AGP", "PCI Express (PCIe)"], a: "PCI Express (PCIe)", j: "A diferencia de sus predecesores paralelos (PCI, AGP), PCIe es un bus serial que utiliza enlaces punto a punto y es el estándar actual." },
+            { q: "El Bus de Datos tiene como función principal:", o: ["Indicar dónde leer o escribir", "Sincronizar el sistema", "Transportar la información (datos) entre componentes", "Gestionar las interrupciones"], a: "Transportar la información (datos) entre componentes", j: "El Bus de Datos es el canal físico por donde fluyen los datos binarios que se transfieren entre el CPU, la memoria y los dispositivos de E/S." },
+            { q: "¿Qué implica que una arquitectura use un Bus de Memoria en 'Dual Channel'?", o: ["Solo se puede usar una ranura de RAM", "Se usa un único bus de 64 bits", "Se usan dos buses de 64 bits simultáneamente, duplicando el ancho de banda", "Solo funciona con memorias DDR3"], a: "Se usan dos buses de 64 bits simultáneamente, duplicando el ancho de banda", j: "Dual Channel permite que el controlador de memoria acceda a dos módulos de RAM al mismo tiempo, doblando el ancho de banda efectivo a la memoria principal." },
+
+            // UNIDAD 4: Arranque y Firmware
+            { q: "¿Qué significa la sigla POST en el proceso de arranque?", o: ["Program Operating System Test", "Power-On Self Test", "Peripheral Output System Transfer", "Processor Operating System Task"], a: "Power-On Self Test", j: "El POST es la autoprueba de encendido que realiza el firmware para verificar la funcionalidad básica del hardware antes de cargar el Sistema Operativo." },
+            { q: "El estándar de firmware moderno que reemplaza al BIOS y soporta arranque seguro (<span class='tecnicismo'>Secure Boot</span>) es:", o: ["CMOS", "UEFI", "PCH", "GRUB"], a: "UEFI", j: "UEFI (Unified Extensible Firmware Interface) es el reemplazo moderno del BIOS, ofreciendo interfaz gráfica, soporte para particiones GPT y características de seguridad como Secure Boot." },
+            { q: "¿Qué es la primera cosa que hace la CPU después de encender el sistema?", o: ["Cargar el Sistema Operativo", "Acceder a un punto de inicio predefinido en la Memoria ROM/Flash (Firmware)", "Inicializar la tarjeta gráfica", "Comenzar a ejecutar programas de usuario"], a: "Acceder a un punto de inicio predefinido en la Memoria ROM/Flash (Firmware)", j: "El CPU tiene una dirección de memoria preprogramada para buscar la primera instrucción, que siempre está en el firmware (BIOS/UEFI) para iniciar el POST." },
+            { q: "El **Gestor de Arranque** (<span class='tecnicismo'>Boot Loader</span>) es un programa cuya función es:", o: ["Realizar el POST", "Transferir datos por DMA", "Localizar y cargar el núcleo (*kernel*) del Sistema Operativo", "Generar las señales de reloj"], a: "Localizar y cargar el núcleo (*kernel*) del Sistema Operativo", j: "El Boot Loader (como GRUB o el gestor de Windows) es el puente entre el firmware y el Sistema Operativo, responsable de encontrar y cargar el kernel en la RAM." },
+            { q: "El <span class='tecnicismo'>Secure Boot</span> es una característica de seguridad ofrecida por UEFI que:", o: ["Cifra el disco duro completo", "Impide la carga de software malicioso o no firmado durante el arranque", "Acelera el proceso del POST", "Reemplaza al PCH"], a: "Impide la carga de software malicioso o no firmado durante el arranque", j: "Secure Boot garantiza que solo se carguen binarios de arranque y drivers verificados y confiables, protegiendo contra *rootkits*." },
+            { q: "¿Qué tipo de memoria no volátil almacena el firmware (BIOS/UEFI)?", o: ["DRAM", "Caché L1", "ROM/Flash", "RAM estática"], a: "ROM/Flash", j: "El firmware se almacena en un chip de memoria no volátil (que mantiene los datos sin energía), generalmente de tipo Flash ROM, ubicado en la Motherboard." },
+            { q: "El <span class='tecnicismo'>Kernel</span> del Sistema Operativo es:", o: ["Una aplicación de usuario", "El programa que realiza el POST", "El núcleo central del SO que gestiona recursos", "Un tipo de memoria de baja velocidad"], a: "El núcleo central del SO que gestiona recursos", j: "El kernel es el corazón del Sistema Operativo, encargado de gestionar la memoria, los procesos, los periféricos y la comunicación entre hardware y software." },
+            { q: "En el proceso de arranque, ¿qué sucede inmediatamente después de que el POST finaliza exitosamente?", o: ["El CPU se apaga", "Se carga el Gestor de Arranque", "Se ejecuta la primera aplicación de usuario", "Se inicia el DMA"], a: "Se carga el Gestor de Arranque", j: "Una vez que el hardware ha sido verificado por el POST, el control pasa al gestor de arranque, que se encarga de iniciar el Sistema Operativo." },
+            { q: "¿Por qué el UEFI reemplazó al BIOS legacy?", o: ["Solo por la interfaz gráfica", "Para permitir el uso de discos con formato MBR", "Por su soporte nativo de 64 bits y capacidad de manejar particiones GPT (>2TB)", "Debido a que es más lento"], a: "Por su soporte nativo de 64 bits y capacidad de manejar particiones GPT (>2TB)", j: "El límite de 2TB y el modo de 16 bits del BIOS eran limitantes que UEFI resolvió con sus capacidades modernas." },
+            { q: "¿Qué es el 'firmware'?", o: ["Un programa de aplicación", "Software de bajo nivel incrustado en hardware", "El Sistema Operativo completo", "Un driver de periférico"], a: "Software de bajo nivel incrustado en hardware", j: "El firmware es software que proporciona control de bajo nivel para el hardware específico del dispositivo, como el BIOS/UEFI de la Motherboard." },
+
+            // UNIDAD 5: Periféricos y Controladores
+            { q: "La principal ventaja de la técnica **DMA** es que permite:", o: ["Aumentar la frecuencia del CPU", "Transferir datos entre periféricos y RAM sin la intervención constante del CPU", "Reducir el tamaño de la caché L1", "Mejorar la interfaz gráfica"], a: "Transferir datos entre periféricos y RAM sin la intervención constante del CPU", j: "El DMA (Acceso Directo a Memoria) libera al CPU, permitiendo transferencias de datos eficientes para dispositivos rápidos como SSDs y tarjetas de red de alta velocidad." },
+            { q: "El mecanismo donde un periférico llama la atención del CPU para solicitar servicio se conoce como:", o: ["Polling", "Paginación", "Interrupción", "Execute"], a: "Interrupción", j: "Una interrupción es una señal asíncrona que detiene el procesamiento actual del CPU para que pueda atender una necesidad urgente del periférico." },
+            { q: "¿Qué se necesita para que la CPU pueda comunicarse y usar un periférico (ej. un mouse o impresora)?", o: ["Un bus serial", "Un Chipset de alta velocidad", "Un Controlador (<span class='tecnicismo'>Driver</span>)", "La BIOS"], a: "Un Controlador (<span class='tecnicismo'>Driver</span>)", j: "El controlador (software y hardware) es el componente esencial que traduce las peticiones de la CPU en comandos que el periférico puede entender y viceversa." },
+            { q: "¿Cuál es el tipo de interfaz de usuario más simple, basada únicamente en comandos de texto?", o: ["GUI", "NUI", "WIMP", "CLI (Command Line Interface)"], a: "CLI (Command Line Interface)", j: "La CLI es la Interfaz de Línea de Comandos, que ofrece el mayor control y es la más ligera en recursos, ideal para administración de servidores." },
+            { q: "La Interfaz Gráfica de Usuario (GUI) se basa en el modelo WIMP, que significa:", o: ["Windows, Internet, Mouse, Protocol", "Windows, Icons, Menus, Pointers", "Wide, Internal, Main, Power", "Wireless, Integrated, Mobile, Protocol"], a: "Windows, Icons, Menus, Pointers", j: "WIMP describe los elementos fundamentales de una GUI: Ventanas, Íconos, Menús y Punteros (mouse/ratón)." },
+            { q: "¿Quién se encarga de gestionar las múltiples interrupciones provenientes de diferentes periféricos y pasarlas al CPU de forma organizada?", o: ["El Controlador de DMA", "El Controlador de Interrupciones Programable (PIC)", "La ALU", "El Bus de Direcciones"], a: "El Controlador de Interrupciones Programable (PIC)", j: "El PIC (o su equivalente moderno) actúa como un multiplexor, priorizando y gestionando las solicitudes de interrupción antes de pasarlas a la Unidad de Control del CPU." },
+            { q: "Los periféricos de **entrada** son aquellos que:", o: ["Almacenan datos temporalmente", "Muestran información al usuario", "Transfieren datos desde el exterior al sistema", "Gestionan la energía"], a: "Transfieren datos desde el exterior al sistema", j: "Los periféricos de entrada (teclado, ratón, escáner) capturan datos del entorno para ser procesados por la computadora." },
+            { q: "Los periféricos de **salida** son aquellos que:", o: ["Almacenan datos temporalmente", "Muestran información al usuario (gráfica, sonora o impresa)", "Transfieren datos desde el exterior al sistema", "Gestionan la energía"], a: "Muestran información al usuario (gráfica, sonora o impresa)", j: "Los periféricos de salida (monitor, impresora, altavoces) presentan el resultado del procesamiento al usuario." },
+            { q: "¿Qué puerto serial fue diseñado específicamente para la conexión de dispositivos de baja velocidad y es gestionado por el PCH?", o: ["PCIe x16", "SATA", "USB", "Bus de Memoria"], a: "USB", j: "El USB (Universal Serial Bus) es el estándar de conectividad serial más común para periféricos de baja y media velocidad, controlado por el Chipset (PCH)." },
+            { q: "¿Cuál de los siguientes no es un dispositivo de almacenamiento secundario?", o: ["Disco Duro (HDD)", "SSD (Solid State Drive)", "Memoria RAM (DRAM)", "Unidad de cinta"], a: "Memoria RAM (DRAM)", j: "La Memoria RAM es el almacenamiento primario (<span class='tecnicismo'>primary storage</span>) de acceso rápido y volátil, mientras que los demás son almacenamiento secundario (no volátil)." }
+        ];
+
+        let currentQuestionIndex = 0;
+        const quizContainer = document.getElementById('quiz-container');
+        const scoreDisplay = document.getElementById('score');
+        const resultDisplay = document.getElementById('game-result');
+        const restartButton = document.getElementById('restart-button');
+        let selectedQuestions = []; // Array para almacenar las 8 preguntas únicas de la sesión
+
+        // 7. Función para seleccionar 8 preguntas únicas y aleatorias
+        function selectRandomQuestions() {
+            if (fullQuizData.length < 8) {
+                console.error("No hay suficientes preguntas para el juego.");
+                return;
+            }
+            
+            // Crea una copia del banco de preguntas
+            const availableQuestions = [...fullQuizData];
+            selectedQuestions = [];
+
+            // Selecciona 8 preguntas sin repetición
+            for (let i = 0; i < 8; i++) {
+                const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                selectedQuestions.push(availableQuestions[randomIndex]);
+                availableQuestions.splice(randomIndex, 1); // Elimina la pregunta seleccionada
+            }
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex < selectedQuestions.length) {
+                const qData = selectedQuestions[currentQuestionIndex];
+                quizContainer.innerHTML = `
+                    <div class="question-box">
+                        <h3>Escalón ${currentQuestionIndex + 1} de 8</h3>
+                        <p style="font-size: 1.1em; font-weight: 600;">${qData.q}</p>
+                        <div class="options-container">
+                            ${qData.o.map((option, index) => 
+                                `<button onclick="checkAnswer(this, ${currentQuestionIndex})">${option}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+                scoreDisplay.textContent = `Escalón: ${currentQuestionIndex + 1} de 8`;
+                resultDisplay.textContent = '';
+            } else {
+                quizContainer.innerHTML = '¡Felicitaciones! Has completado los 8 escalones con éxito y demostrado tu dominio de la Arquitectura de Computadoras.';
+                resultDisplay.innerHTML = '<span style="color: #28a745;">🏆 ¡VICTORIA! 🏆</span>';
+                scoreDisplay.style.display = 'none';
+                restartButton.style.display = 'block';
+            }
+        }
+
+        window.checkAnswer = function(button, questionIndex) {
+            const qData = selectedQuestions[questionIndex];
+            const selectedAnswer = button.textContent;
+            const buttons = button.parentElement.querySelectorAll('button');
+            
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === qData.a) {
+                    btn.classList.add('correct');
+                } else if (btn === button) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            if (selectedAnswer === qData.a) {
+                // Respuesta correcta
+                resultDisplay.innerHTML = '<span style="color: #28a745;">✅ ¡Respuesta Correcta! Siguiente escalón...</span>';
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }, 1500); 
+            } else {
+                // Respuesta incorrecta: JUEGO PERDIDO (Justificación)
+                resultDisplay.innerHTML = `
+                    <span style="color: #dc3545;">❌ ¡HAS FALLADO! El desafío termina aquí.</span>
+                    <p style="margin-top: 10px; text-align: left; background-color: #4a4a4a; padding: 15px; border-radius: 5px;">
+                        <strong style="color: #ffc107;">Respuesta Correcta:</strong> ${qData.a}
+                        <br><br>
+                        <strong style="color: #ffc107;">Justificación Teórica:</strong> ${qData.j}
+                    </p>
+                `;
+                scoreDisplay.style.display = 'none';
+                restartButton.style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            scoreDisplay.style.display = 'block';
+            resultDisplay.textContent = '';
+            restartButton.style.display = 'none';
+            selectRandomQuestions(); // Nueva selección aleatoria y única de 8 preguntas
+            loadQuestion();
+        }
+
+        restartButton.addEventListener('click', resetGame);
+        
+        // Inicializa el juego al cargar la página
+        if (document.querySelector('.nav-link.active').getAttribute('data-target') === 'juego-final') {
+            resetGame();
+        }
+    });
+
+    // Función para manejar el movimiento del tooltip de la Motherboard (Punto 5)
+    document.addEventListener('mousemove', (e) => {
+        const mbTooltip = document.getElementById('mb-tooltip');
+        if (mbTooltip.style.display === 'block') {
+            // Ajuste fino para seguir el cursor sin bloquear el hotspot
+            mbTooltip.style.left = `${e.clientX + 10}px`;
+            mbTooltip.style.top = `${e.clientY + 10}px`;
+        }
+    });
+</script>
+
+</body>
+</html>
